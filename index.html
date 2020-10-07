@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+        integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
+    <script src="https://kit.fontawesome.com/19263b21df.js" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="./assets/style.css">
+    <title>Your Forecast</title>
+</head>
+
+<body>
+    <div class="container max-width">
+        <div class="row">
+            <div class="col-12">
+                <header>
+                    <h1 id="dashboard">
+                        Weather Dashboard
+                    </h1>
+                </header>
+            </div>
+        </div>
+
+        <!--Side bar for the search area and the list of previous searches-->
+
+        <div class="row">
+
+            <div class="col-4">
+
+                <div id="aside" class="row">
+                    <div class="col-12">
+                        <h4 style="text-align: left;">
+                            Search for a City:
+                        </h4>
+                    </div>
+                </div>
+
+                <!--Search box and button-->
+                <div class="row">
+                    <div class="col-9">
+                        <input type="text" id="search">
+                        </input>
+                    </div>
+
+                    <div class="col-3">
+                        <button id="searchBtn" type="button" class="btn btn-primary"><i
+                                class="fas fa-search"></i></button>
+                    </div>
+                </div>
+                <br>
+                <div class="row">
+                    <div class="col-12">
+                        <h4>
+                            Past results
+                        </h4>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-12">
+                        <ul id="results" class="list-group list-group-flush">
+
+                        </ul>
+                    </div>
+
+                </div>
+
+            </div>
+
+
+
+
+
+
+
+            <div class="col-8">
+                <div class="row" id="blank">
+                    <div class=" col-12" id="dailyReport">
+
+                    </div>
+                </div>
+                <div class=" row">
+                    <div class="col-12" id="fiveDay">
+
+                    </div>
+
+                </div>
+                <div class="row" id="fiveDayCards">
+
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!--End of the container div-->
+    </div>
+
+
+    <script src="./assets/moment.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script type="text/javascript">
+
+        $(document).ready(function () {
+            $("#searchBtn").on("click", function () {
+                event.preventDefault();
+                var inputData = document.querySelector('input')
+                var city = inputData.value;
+                var queryURL = "https://api.openweathermap.org/data/2.5/weather?q=" + city + "&appid=8ffd5a89add1652a7a43fb298ff199a9";
+
+                $.ajax({
+                    url: queryURL,
+                    method: "GET"
+                }).then(function (response) {
+
+                    document.getElementById("dailyReport").innerHTML = " ";
+                    var cityProper = response.name;
+                    var cityTemp = parseInt(response.main.feels_like);
+                    cityTemp = Math.floor(((cityTemp - 273.15) * (9 / 5)) + 32);
+
+                    var cityHumidty = response.main.humidity;
+                    var cityWindSpeed = response.wind.speed;
+                    var cityUVIndex = "Figure me out";
+
+
+                    $("#dailyReport").append(("<h4>") + cityProper + " " + moment().format("MMM Do YYYY") + ("</h4>"));
+                    $("#dailyReport").append(("<h6>") + "Temperature: " + cityTemp + ("</h5>"));
+                    $("#dailyReport").append(("<h6>") + "Humidity: " + cityHumidty + ("</h5>"));
+                    $("#dailyReport").append(("<h6>") + "Wind Speed: " + cityWindSpeed + " MPH" + ("</h5>"));
+                    $("#dailyReport").append(("<h6>") + "UV Index: " + cityUVIndex + ("</h6>"));
+                    $("#blank").css("border-style", "groove");
+
+
+
+
+                    queryURL = "https://api.openweathermap.org/data/2.5/forecast?q=" + city + "&appid=8ffd5a89add1652a7a43fb298ff199a9";
+
+
+                    $.ajax({
+                        url: queryURL,
+                        method: "GET"
+                    }).then(function (response) {
+                        document.getElementById("fiveDayCards").innerHTML = " ";
+                        document.getElementById("fiveDay").innerHTML = " ";
+
+
+
+                        var fiveDayHeader = $("<h6>5-Day Forecast:</h6>");
+                        $("#fiveDay").prepend(fiveDayHeader);
+
+
+                        for (var i = 0; i < 5; i++) {
+                            var cityTemp = parseInt(response.list[i].main.temp);
+                            cityTemp = Math.floor(((cityTemp - 273.15) * (9 / 5)) + 32);
+                            var insertTemp = ("<p >") + "Temp: " + cityTemp + ("</p>");
+                            var cityHumidty = response.list[i].main.humidity;
+                            cityHumidty = ("<p>") + "Humidty: " + cityTemp + ("</p>");
+
+
+
+                            $("#fiveDayCards").append("<div class='col-2' style='border-style: groove;'>" + insertTemp + cityHumidty + "</div>");
+
+                        }
+
+
+
+
+
+                    });
+
+                    $("#results").append("<button type='button' id='" + cityProper + "'>" + cityProper + "</button>");
+
+                    $("#searchBtn").click(function () {
+                        event.preventDefault()
+                        localStorage.setItem(cityProper, cityProper);
+                    });
+                });
+
+            });
+
+            $("<button>").click(function () {
+                
+            })
+
+
+
+
+        });
+
+
+        // on load run last search
+        window.onload = function () {
+            console.log(localStorage);
+            for (var i = 0; i < localStorage.length; i++) {
+                var cityProper = localStorage.key(i);
+                $("#results").append("<button type='button' id='" + cityProper + "'>" + cityProper + "</button>");
+            }
+
+        };
+
+
+
+
+
+
+
+
+    </script>
+
+</body>
+
+</html>
